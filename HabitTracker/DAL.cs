@@ -32,13 +32,11 @@ namespace HabitTracker
 
         public void CreateMainTableIfMissing()
         {
-            string sql = "CREATE TABLE IF NOT EXISTS \"habit\" " +
-                         "(\"id\" INTEGER NOT NULL UNIQUE," +
-                         "\"date\" TEXT NOT NULL," +
-                         "\"quantity\" INTEGER NOT NULL," +
-                         "PRIMARY KEY(\"id\" AUTOINCREMENT));";
+            string sql = "CREATE TABLE IF NOT EXISTS habit (" +
+                         "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                         "date TEXT NOT NULL, " +
+                         "quantity INTEGER NOT NULL)";
             SqliteCommand cmd = new SqliteCommand(sql, conn);
-            cmd.CommandText = sql;
             cmd.ExecuteNonQuery();
         }
 
