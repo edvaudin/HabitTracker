@@ -1,11 +1,13 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using HabitTracker;
+using Microsoft.Data.Sqlite;
 
 class Program
 {
-    static string connectionString = @"Data Source=habit-Tracker.db";
-
     static void Main(string[] args)
     {
+        using (DAL dal = new DAL())
+        {
+            dal.CreateMainTableIfMissing();
+        }
     }
-
 }
