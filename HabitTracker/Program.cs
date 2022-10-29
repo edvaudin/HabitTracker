@@ -48,7 +48,20 @@ class Program
 
     private static void UpdateEntry()
     {
-        Console.WriteLine("Not implemented yet.");
+        ViewTable();
+        int id = GetIdForUpdate();
+        int steps = GetEntrySteps();
+        using (DAL dal = new DAL())
+        {
+            try
+            {
+                dal.UpdateEntry(id, steps);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
     }
 
     private static void DeleteEntry()
@@ -104,17 +117,39 @@ class Program
     {
         Console.Write("Which entry do you want to remove? ");
         string input = Console.ReadLine();
-        while (!Int32.TryParse(input, out int parsedSteps))
+        using (DAL dal = new DAL())
         {
-            Console.Write("This is not a valid step count, please enter a number: ");
-            input = Console.ReadLine();
+            List<int> validIds = dal.GetIds();
+            while (!Int32.TryParse(input, out int id) && (validIds.Contains(id)))
+            {
+                Console.Write("This is not a valid id, please enter a number: ");
+                input = Console.ReadLine();
+            }
+            
+        }
+        return Int32.Parse(input);
+    }
+
+    private static int GetIdForUpdate()
+    {
+        Console.Write("Which entry do you want to update? ");
+        string input = Console.ReadLine();
+        using (DAL dal = new DAL())
+        {
+            List<int> validIds = dal.GetIds();
+            while (!Int32.TryParse(input, out int id) && (validIds.Contains(id)))
+            {
+                Console.Write("This is not a valid id, please enter a number: ");
+                input = Console.ReadLine();
+            }
+
         }
         return Int32.Parse(input);
     }
 
     private static int GetEntrySteps()
     {
-        Console.Write("How many steps did you do today? ");
+        Console.Write("How many steps did you do? ");
         string input = Console.ReadLine();
         while (!Int32.TryParse(input, out int parsedSteps))
         {

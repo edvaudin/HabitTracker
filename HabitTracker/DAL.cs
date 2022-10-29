@@ -22,7 +22,6 @@ namespace HabitTracker
             try
             {
                 conn.Open();
-                Console.WriteLine("Connected to database successfully");
             }
             catch (Exception e)
             {
@@ -57,6 +56,15 @@ namespace HabitTracker
             cmd.ExecuteNonQuery();
         }
 
+        public void UpdateEntry(int id, int steps)
+        {
+            string sql = "UPDATE habit SET steps = @steps WHERE id = @id;";
+            SqliteCommand cmd = new SqliteCommand(sql, conn);
+            AddParameter("@id", id, cmd);
+            AddParameter("@steps", steps, cmd);
+            cmd.ExecuteNonQuery();
+        }
+
         public List<Entry> GetEntries()
         {
             try
@@ -70,6 +78,29 @@ namespace HabitTracker
             {
                 Console.WriteLine(e.Message);
                 return new List<Entry>();
+            }
+        }
+
+        public List<int> GetIds()
+        {
+            try
+            {
+                string sql = "SELECT id FROM habit;";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                List<int> ids = new List<int>();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        ids.Add(reader.GetOrdinal("id"));
+                    }
+                }
+                return ids;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return new List<int>();
             }
         }
 
