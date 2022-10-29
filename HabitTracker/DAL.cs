@@ -40,6 +40,39 @@ namespace HabitTracker
             cmd.ExecuteNonQuery();
         }
 
+        public List<Entry> GetEntries()
+        {
+            try
+            {
+                string sql = "SELECT * FROM habit;";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                return GetQueriedList(cmd, reader => new Entry(reader));
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return new List<Entry>();
+            }
+        }
+
+        protected static List<T> GetQueriedList<T>(SqliteCommand cmd, Func<SqliteDataReader, T> creator)
+        {
+            List<T> results = new List<T>();
+            using (var reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    try
+                    {
+                        results.Add(creator(reader));
+                    }
+                    catch (Exception ex) { Console.WriteLine(ex); }
+                }
+            }
+            return results;
+        }
+
         public void Dispose()
         {
             if (conn != null) { conn.Close(); }

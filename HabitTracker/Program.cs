@@ -63,8 +63,18 @@ class Program
 
     private static void ViewTable()
     {
-        Console.WriteLine("Not implemented yet.");
+        using (DAL dal = new DAL())
+        {
+            List<Entry> entries = dal.GetEntries();
+            string output = string.Empty;
+            foreach (Entry entry in entries)
+            {
+                output += $"{entry}\n";
+            }
+            Console.WriteLine(output);
+        }
     }
+
 
     private static string GetUserInput()
     {
