@@ -53,12 +53,19 @@ class Program
 
     private static void DeleteEntry()
     {
-        Console.WriteLine("Not implemented yet.");
-    }
-
-    private static void AddEntry()
-    {
-        Console.WriteLine("Not implemented yet.");
+        ViewTable();
+        int id = GetIdForRemoval();
+        using (DAL dal = new DAL())
+        {
+            try
+            {
+                dal.DeleteEntry(id);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
     }
 
     private static void ViewTable()
@@ -75,13 +82,67 @@ class Program
         }
     }
 
+    private static void AddEntry()
+    {
+        string date = GetEntryDate();
+        int steps = GetEntrySteps();
+        using (DAL dal = new DAL())
+        {
+            try
+            {
+                dal.AddEntry(date, steps);
+                Console.WriteLine("Successfully added new entry.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+    }
+
+    private static int GetIdForRemoval()
+    {
+        Console.Write("Which entry do you want to remove? ");
+        string input = Console.ReadLine();
+        while (!Int32.TryParse(input, out int parsedSteps))
+        {
+            Console.Write("This is not a valid step count, please enter a number: ");
+            input = Console.ReadLine();
+        }
+        return Int32.Parse(input);
+    }
+
+    private static int GetEntrySteps()
+    {
+        Console.Write("How many steps did you do today? ");
+        string input = Console.ReadLine();
+        while (!Int32.TryParse(input, out int parsedSteps))
+        {
+            Console.Write("This is not a valid step count, please enter a number: ");
+            input = Console.ReadLine();
+        }
+        return Int32.Parse(input);
+    }
+
+    private static string GetEntryDate()
+    {
+        Console.Write("What date are you adding for? (yyyy-mm-dd): ");
+        string input = Console.ReadLine();
+        while (!DateTime.TryParse(input, out DateTime date))
+        {
+            Console.Write("This is not a valid date, please use the format 'yyyy-mm-dd'");
+            input = Console.ReadLine();
+        }
+        return input;
+    }
+
 
     private static string GetUserInput()
     {
         string input = Console.ReadLine();
         while (!IsValidInput(input))
         {
-            Console.Write("This is not valid input. Please enter one of the above options: ");
+            Console.Write("This is not a valid input. Please enter one of the above options: ");
             input = Console.ReadLine();
         }
         return input;

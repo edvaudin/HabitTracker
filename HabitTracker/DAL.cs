@@ -40,6 +40,23 @@ namespace HabitTracker
             cmd.ExecuteNonQuery();
         }
 
+        public void AddEntry(string date, int steps)
+        {
+            string sql = "INSERT INTO habit (date, steps) VALUES (@date, @steps);";
+            SqliteCommand cmd = new SqliteCommand(sql, conn);
+            AddParameter("@date", date, cmd);
+            AddParameter("@steps", steps, cmd);
+            cmd.ExecuteNonQuery();
+        }
+
+        public void DeleteEntry(int id)
+        {
+            string sql = "DELETE FROM habit WHERE id = @id;";
+            SqliteCommand cmd = new SqliteCommand(sql, conn);
+            AddParameter("@id", id, cmd);
+            cmd.ExecuteNonQuery();
+        }
+
         public List<Entry> GetEntries()
         {
             try
@@ -54,6 +71,13 @@ namespace HabitTracker
                 Console.WriteLine(e.Message);
                 return new List<Entry>();
             }
+        }
+
+        protected static void AddParameter<T>(string name, T value, SqliteCommand cmd)
+        {
+            SqliteParameter param = new SqliteParameter(name, SqlDbTypeConverter.GetDbType(value.GetType()));
+            param.Value = value;
+            cmd.Parameters.Add(param);
         }
 
         protected static List<T> GetQueriedList<T>(SqliteCommand cmd, Func<SqliteDataReader, T> creator)
