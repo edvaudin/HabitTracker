@@ -33,6 +33,9 @@ class Program
             case "u":
                 UpdateEntry();
                 break;
+            case "c":
+                CreateHabit();
+                break;
             case "0":
                 ExitApp();
                 break;
@@ -48,14 +51,16 @@ class Program
 
     private static void UpdateEntry()
     {
-        ViewTable();
-        int id = GetIdForUpdate();
-        int steps = GetEntrySteps();
         using (DAL dal = new DAL())
         {
+            ViewTable();
+            int id = GetIdForUpdate();
+            int habitId = GetHabitId();
+            int quantity = GetEntryQuantity(dal.GetHabit(habitId).measurement);
+        
             try
             {
-                dal.UpdateEntry(id, steps);
+                dal.UpdateEntry(id, quantity);
             }
             catch (Exception e)
             {
@@ -97,13 +102,15 @@ class Program
 
     private static void AddEntry()
     {
-        string date = GetEntryDate();
-        int steps = GetEntrySteps();
         using (DAL dal = new DAL())
         {
             try
             {
-                dal.AddEntry(date, steps);
+                int habitId = GetHabitId();
+                string date = GetEntryDate();
+                int quantity = GetEntryQuantity(dal.GetHabit(habitId).measurement);
+            
+                dal.AddEntry(date, quantity, habitId);
                 Console.WriteLine("Successfully added new entry.");
             }
             catch (Exception e)
@@ -113,47 +120,132 @@ class Program
         }
     }
 
+    private static int GetHabitId()
+    {
+        string input = string.Empty;
+        using (DAL dal = new DAL())
+        {
+            try
+            {
+                string listOfHabits = string.Empty;
+                List<Habit> validHabits = dal.GetHabits();
+                foreach (Habit habit in validHabits)
+                {
+                    listOfHabits += $"{habit}\n";
+                }
+                Console.WriteLine(listOfHabits);
+                List<int> validHabitIds = validHabits.Select(h => h.id).ToList();
+                Console.Write("Enter the number corresponding to the habit this entry is for: ");
+                while (true)
+                {
+                    if (Int32.TryParse(Console.ReadLine(), out int result))
+                    {
+                        if (validHabitIds.Contains(result))
+                        {
+                            return result;
+                        }
+                    }
+                    Console.Write("This is not a valid id, please enter a number: ");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+        
+        return Int32.Parse(input);
+    }
+
+    private static void CreateHabit()
+    {
+        string name = GetHabitName();
+        string measurement = GetHabitMeasurement();
+        using (DAL dal = new DAL())
+        {
+            try
+            {
+                dal.CreateHabit(name, measurement);
+                Console.WriteLine("Successfully added new habit.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+    }
+
+    private static string GetHabitMeasurement()
+    {
+        Console.Write("What is the measurement of your habit? ");
+        string input = Console.ReadLine();
+        while (input.Length == 0)
+        {
+            Console.Write("Habit measurement should not be empty. Try again: ");
+            input = Console.ReadLine();
+        }
+        return input;
+    }
+
+    private static string GetHabitName()
+    {
+        Console.Write("What is the name of your habit? ");
+        string input = Console.ReadLine();
+        while (input.Length == 0)
+        {
+            Console.Write("Habit name should not be empty. Try a new name: ");
+            input = Console.ReadLine();
+        }
+        return input;
+    }
+
     private static int GetIdForRemoval()
     {
         Console.Write("Which entry do you want to remove? ");
-        string input = Console.ReadLine();
         using (DAL dal = new DAL())
         {
-            List<int> validIds = dal.GetIds();
-            while (!Int32.TryParse(input, out int id) && (validIds.Contains(id)))
+            List<int> validIds = dal.GetEntries().Select(o => o.id).ToList();
+            while (true)
             {
+                if (Int32.TryParse(Console.ReadLine(), out int result))
+                {
+                    if (validIds.Contains(result))
+                    {
+                        return result;
+                    }
+                }
                 Console.Write("This is not a valid id, please enter a number: ");
-                input = Console.ReadLine();
             }
-            
         }
-        return Int32.Parse(input);
     }
 
     private static int GetIdForUpdate()
     {
         Console.Write("Which entry do you want to update? ");
-        string input = Console.ReadLine();
         using (DAL dal = new DAL())
         {
-            List<int> validIds = dal.GetIds();
-            while (!Int32.TryParse(input, out int id) && (validIds.Contains(id)))
+            List<int> validIds = dal.GetEntries().Select(o => o.id).ToList();
+            while (true)
             {
+                if (Int32.TryParse(Console.ReadLine(), out int result))
+                {
+                    if (validIds.Contains(result))
+                    {
+                        return result;
+                    }
+                }
                 Console.Write("This is not a valid id, please enter a number: ");
-                input = Console.ReadLine();
             }
-
         }
-        return Int32.Parse(input);
     }
 
-    private static int GetEntrySteps()
+    private static int GetEntryQuantity(string measurement)
     {
-        Console.Write("How many steps did you do? ");
+        Console.Write($"How many {measurement} did you do? ");
         string input = Console.ReadLine();
-        while (!Int32.TryParse(input, out int parsedSteps))
+        while (!Int32.TryParse(input, out int parsed))
         {
-            Console.Write("This is not a valid step count, please enter a number: ");
+            Console.Write("This is not a valid quantity, please enter a number: ");
             input = Console.ReadLine();
         }
         return Int32.Parse(input);
@@ -185,7 +277,7 @@ class Program
 
     private static bool IsValidInput(string? input)
     {
-        string[] validOptions = { "v", "a", "d", "u", "0" };
+        string[] validOptions = { "v", "a", "d", "u", "c", "0" };
         foreach (string validOption in validOptions)
         {
             if (input == validOption)
@@ -203,6 +295,7 @@ class Program
         Console.WriteLine("\ta - Add a new entry");
         Console.WriteLine("\td - Delete an entry");
         Console.WriteLine("\tu - Update an entry");
+        Console.WriteLine("\tc - Create new habit");
         Console.WriteLine("\t0 - Quit this application");
         Console.Write("Your option? ");
     }
@@ -225,7 +318,7 @@ class Program
 
     private static void DisplayTitle()
     {
-        Console.WriteLine("Habit Tracker\r");
+        Console.WriteLine("Steps Tracker\r");
         Console.WriteLine("-------------\n");
     }
 }

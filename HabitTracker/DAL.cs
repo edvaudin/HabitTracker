@@ -39,29 +39,68 @@ namespace HabitTracker
             cmd.ExecuteNonQuery();
         }
 
-        public void AddEntry(string date, int steps)
+        public void CreateHabit(string name, string measurement)
         {
-            string sql = "INSERT INTO habit (date, steps) VALUES (@date, @steps);";
+            string sql = "INSERT INTO habits (name, measurement) VALUES (@name, @measurement);";
+            SqliteCommand cmd = new SqliteCommand(sql, conn);
+            AddParameter("@name", name, cmd);
+            AddParameter("@measurement", measurement, cmd);
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<Habit> GetHabits()
+        {
+            string sql = "SELECT * FROM habits;";
+            SqliteCommand cmd = new SqliteCommand(sql, conn);
+            return GetQueriedList(cmd, reader => new Habit(reader));
+        }
+
+        public Habit GetHabit(int id)
+        {
+            try
+            {
+                string sql = "SELECT * FROM habits WHERE id = @id;";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                AddParameter("@id", id, cmd);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        return new Habit(reader);
+                    }
+                }
+                return new Habit();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return new Habit();
+            }
+        }
+        public void AddEntry(string date, int quantity, int habitId)
+        {
+            string sql = "INSERT INTO tracker (date, quantity, habit_id) VALUES (@date, @quantity, @habit_id);";
             SqliteCommand cmd = new SqliteCommand(sql, conn);
             AddParameter("@date", date, cmd);
-            AddParameter("@steps", steps, cmd);
+            AddParameter("@quantity", quantity, cmd);
+            AddParameter("@habit_id", habitId, cmd);
             cmd.ExecuteNonQuery();
         }
 
         public void DeleteEntry(int id)
         {
-            string sql = "DELETE FROM habit WHERE id = @id;";
+            string sql = "DELETE FROM tracker WHERE id = @id;";
             SqliteCommand cmd = new SqliteCommand(sql, conn);
             AddParameter("@id", id, cmd);
             cmd.ExecuteNonQuery();
         }
 
-        public void UpdateEntry(int id, int steps)
+        public void UpdateEntry(int id, int quantity)
         {
-            string sql = "UPDATE habit SET steps = @steps WHERE id = @id;";
+            string sql = "UPDATE tracker SET quantity = @quantity WHERE id = @id;";
             SqliteCommand cmd = new SqliteCommand(sql, conn);
             AddParameter("@id", id, cmd);
-            AddParameter("@steps", steps, cmd);
+            AddParameter("@quantity", quantity, cmd);
             cmd.ExecuteNonQuery();
         }
 
@@ -69,7 +108,7 @@ namespace HabitTracker
         {
             try
             {
-                string sql = "SELECT * FROM habit;";
+                string sql = "SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement from tracker JOIN habits on tracker.habit_id = habits.id;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
                 return GetQueriedList(cmd, reader => new Entry(reader));
 
@@ -78,29 +117,6 @@ namespace HabitTracker
             {
                 Console.WriteLine(e.Message);
                 return new List<Entry>();
-            }
-        }
-
-        public List<int> GetIds()
-        {
-            try
-            {
-                string sql = "SELECT id FROM habit;";
-                SqliteCommand cmd = new SqliteCommand(sql, conn);
-                List<int> ids = new List<int>();
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        ids.Add(reader.GetOrdinal("id"));
-                    }
-                }
-                return ids;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return new List<int>();
             }
         }
 

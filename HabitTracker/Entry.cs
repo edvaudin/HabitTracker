@@ -12,7 +12,8 @@ namespace HabitTracker
     {
         public int id = 0;
         public string date = string.Empty;
-        public int steps = 0;
+        public int quantity = 0;
+        public string measurement = string.Empty;
 
         public Entry() { }
 
@@ -20,18 +21,19 @@ namespace HabitTracker
         {
             this.id = reader.GetInt32(reader.GetOrdinal("id"));
             this.date = reader.GetString(reader.GetOrdinal("date"));
-            this.steps = reader.GetInt32(reader.GetOrdinal("steps"));
+            this.quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
+            this.measurement = reader.GetString(reader.GetOrdinal("measurement"));
         }
 
         public override string ToString()
         {
             if (DateTime.TryParse(date, out DateTime parsedDate))
             {
-                return $"[#{id}] {steps} steps on {parsedDate.ToLongDateString()}";
+                return $"[#{id}] {quantity} {measurement} on {parsedDate.ToLongDateString()}";
             }
             else
             {
-                return $"[#{id}] {steps} steps on {date}";
+                return $"[#{id}] {quantity} {measurement} on {date}";
             }
         }
     }
