@@ -24,6 +24,9 @@ class Program
             case "v":
                 ViewTable();
                 break;
+            case "h":
+                ViewHighest();
+                break;
             case "a":
                 AddEntry();
                 break;
@@ -41,6 +44,24 @@ class Program
                 break;
             default:
                 break;
+        }
+    }
+
+    private static void ViewHighest()
+    {
+        using (DAL dal = new DAL())
+        {
+            int habitId = GetHabitId();
+            try
+            {
+                Entry entry = dal.GetHighestEntryForHabit(habitId);
+                Console.WriteLine($"Below is the most {entry.measurement} you have done in one go:");
+                Console.WriteLine(entry);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
     }
 
@@ -277,7 +298,7 @@ class Program
 
     private static bool IsValidInput(string? input)
     {
-        string[] validOptions = { "v", "a", "d", "u", "c", "0" };
+        string[] validOptions = { "v", "h", "a", "d", "u", "c", "0" };
         foreach (string validOption in validOptions)
         {
             if (input == validOption)
@@ -290,8 +311,9 @@ class Program
 
     private static void DisplayOptionsMenu()
     {
-        Console.WriteLine("Choose an action from the following list:");
+        Console.WriteLine("\nChoose an action from the following list:");
         Console.WriteLine("\tv - View your tracker");
+        Console.WriteLine("\th - View your biggest entry for a habit");
         Console.WriteLine("\ta - Add a new entry");
         Console.WriteLine("\td - Delete an entry");
         Console.WriteLine("\tu - Update an entry");

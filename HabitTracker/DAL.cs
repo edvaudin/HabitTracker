@@ -104,11 +104,38 @@ namespace HabitTracker
             cmd.ExecuteNonQuery();
         }
 
+        public Entry GetHighestEntryForHabit(int habitId)
+        {
+            try
+            {
+                string sql = "SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement FROM tracker " +
+                             "JOIN habits ON tracker.habit_id = habits.id " +
+                             "WHERE tracker.habit_id = @habitId " +
+                             "ORDER BY quantity DESC;";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                AddParameter("@habitId", habitId, cmd);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        return new Entry(reader);
+                    }
+                }
+                return new Entry();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return new Entry();
+            }
+        }
+
         public List<Entry> GetEntries()
         {
             try
             {
-                string sql = "SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement from tracker JOIN habits on tracker.habit_id = habits.id;";
+                string sql = "SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement FROM tracker " +
+                             "JOIN habits on tracker.habit_id = habits.id;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
                 return GetQueriedList(cmd, reader => new Entry(reader));
 
