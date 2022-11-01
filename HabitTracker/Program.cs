@@ -66,16 +66,9 @@ class Program
         using (DAL dal = new DAL())
         {
             int habitId = InputValidator.GetHabitId();
-            try
-            {
-                Entry entry = dal.GetHighestEntryForHabit(habitId);
-                Console.WriteLine($"Below is the most {entry.measurement} you have done in one go:");
-                Console.WriteLine(entry);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            Entry entry = dal.GetHighestEntryForHabit(habitId);
+            Console.WriteLine($"Below is the most {entry.measurement} you have done in one go:");
+            Console.WriteLine(entry);
         }
     }
 
@@ -83,19 +76,11 @@ class Program
     {
         using (DAL dal = new DAL())
         {
-            try
-            {
-                int habitId = InputValidator.GetHabitId();
-                string date = InputValidator.GetEntryDate();
-                int quantity = InputValidator.GetEntryQuantity(dal.GetHabit(habitId).measurement);
-
-                dal.AddEntry(date, quantity, habitId);
-                Console.WriteLine("Successfully added new entry.");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            int habitId = InputValidator.GetHabitId();
+            string date = InputValidator.GetEntryDate();
+            int quantity = InputValidator.GetEntryQuantity(dal.GetHabit(habitId).measurement);
+            dal.AddEntry(date, quantity, habitId);
+            Console.WriteLine("Successfully added new entry.");
         }
     }
 
@@ -105,14 +90,7 @@ class Program
         int id = InputValidator.GetIdForRemoval();
         using (DAL dal = new DAL())
         {
-            try
-            {
-                dal.DeleteEntry(id);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            dal.DeleteEntry(id);
         }
     }
 
@@ -124,15 +102,7 @@ class Program
             int id = InputValidator.GetIdForUpdate();
             int habitId = InputValidator.GetHabitId();
             int quantity = InputValidator.GetEntryQuantity(dal.GetHabit(habitId).measurement);
-
-            try
-            {
-                dal.UpdateEntry(id, quantity);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            dal.UpdateEntry(id, quantity);
         }
     }
 
@@ -142,15 +112,8 @@ class Program
         string measurement = InputValidator.GetHabitMeasurement();
         using (DAL dal = new DAL())
         {
-            try
-            {
-                dal.CreateHabit(name, measurement);
-                Console.WriteLine("Successfully added new habit.");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            dal.CreateHabit(name, measurement);
+            Console.WriteLine("Successfully added new habit.");
         }
     }
 
@@ -176,14 +139,7 @@ class Program
     {
         using (DAL dal = new DAL())
         {
-            try
-            {
-                dal.CreateMainTableIfMissing();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            dal.CreateMainTableIfMissing();
         }
     }
 

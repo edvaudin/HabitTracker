@@ -161,11 +161,7 @@ namespace HabitTracker
             {
                 while (reader.Read())
                 {
-                    try
-                    {
-                        results.Add(creator(reader));
-                    }
-                    catch (Exception ex) { Console.WriteLine(ex); }
+                    results.Add(creator(reader));
                 }
             }
             return results;
