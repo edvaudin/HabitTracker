@@ -7,58 +7,56 @@ using System.Threading.Tasks;
 
 namespace HabitTracker
 {
-    internal class DAL : IDisposable
+    internal class DAL
     {
-        static string connectionString = @"Data Source=habit_tracker.db";
+        static readonly string connectionString = @"Data Source=habit_tracker.db";
         protected SqliteConnection? conn = null;
-        public DAL()
-        {
-            conn = new SqliteConnection(connectionString);
-            TryOpenConnection(conn);
-        }
 
-        private static void TryOpenConnection(SqliteConnection conn)
-        {
-            try
-            {
-                conn.Open();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
+        public DAL() { }
 
         public void CreateMainTableIfMissing()
         {
-            string sql = "CREATE TABLE IF NOT EXISTS habit (" +
+            using (var conn = new SqliteConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "CREATE TABLE IF NOT EXISTS habit (" +
                          "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                          "date TEXT NOT NULL, " +
                          "quantity INTEGER NOT NULL)";
-            SqliteCommand cmd = new SqliteCommand(sql, conn);
-            cmd.ExecuteNonQuery();
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public void CreateHabit(string name, string measurement)
         {
-            string sql = "INSERT INTO habits (name, measurement) VALUES (@name, @measurement);";
-            SqliteCommand cmd = new SqliteCommand(sql, conn);
-            AddParameter("@name", name, cmd);
-            AddParameter("@measurement", measurement, cmd);
-            cmd.ExecuteNonQuery();
+            using (var conn = new SqliteConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "INSERT INTO habits (name, measurement) VALUES (@name, @measurement);";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                AddParameter("@name", name, cmd);
+                AddParameter("@measurement", measurement, cmd);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public List<Habit> GetHabits()
         {
-            string sql = "SELECT * FROM habits;";
-            SqliteCommand cmd = new SqliteCommand(sql, conn);
-            return GetQueriedList(cmd, reader => new Habit(reader));
+            using (var conn = new SqliteConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "SELECT * FROM habits;";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                return GetQueriedList(cmd, reader => new Habit(reader));
+            }
         }
 
         public Habit GetHabit(int id)
         {
-            try
+            using (var conn = new SqliteConnection(connectionString))
             {
+                conn.Open();
                 string sql = "SELECT * FROM habits WHERE id = @id;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
                 AddParameter("@id", id, cmd);
@@ -71,43 +69,52 @@ namespace HabitTracker
                 }
                 return new Habit();
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return new Habit();
-            }
         }
+
         public void AddEntry(string date, int quantity, int habitId)
         {
-            string sql = "INSERT INTO tracker (date, quantity, habit_id) VALUES (@date, @quantity, @habit_id);";
-            SqliteCommand cmd = new SqliteCommand(sql, conn);
-            AddParameter("@date", date, cmd);
-            AddParameter("@quantity", quantity, cmd);
-            AddParameter("@habit_id", habitId, cmd);
-            cmd.ExecuteNonQuery();
+            using (var conn = new SqliteConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "INSERT INTO tracker (date, quantity, habit_id) VALUES (@date, @quantity, @habit_id);";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                AddParameter("@date", date, cmd);
+                AddParameter("@quantity", quantity, cmd);
+                AddParameter("@habit_id", habitId, cmd);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public void DeleteEntry(int id)
         {
-            string sql = "DELETE FROM tracker WHERE id = @id;";
-            SqliteCommand cmd = new SqliteCommand(sql, conn);
-            AddParameter("@id", id, cmd);
-            cmd.ExecuteNonQuery();
+            using (var conn = new SqliteConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "DELETE FROM tracker WHERE id = @id;";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                AddParameter("@id", id, cmd);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public void UpdateEntry(int id, int quantity)
         {
-            string sql = "UPDATE tracker SET quantity = @quantity WHERE id = @id;";
-            SqliteCommand cmd = new SqliteCommand(sql, conn);
-            AddParameter("@id", id, cmd);
-            AddParameter("@quantity", quantity, cmd);
-            cmd.ExecuteNonQuery();
+            using (var conn = new SqliteConnection(connectionString))
+            {
+                conn.Open();
+                string sql = "UPDATE tracker SET quantity = @quantity WHERE id = @id;";
+                SqliteCommand cmd = new SqliteCommand(sql, conn);
+                AddParameter("@id", id, cmd);
+                AddParameter("@quantity", quantity, cmd);
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public Entry GetHighestEntryForHabit(int habitId)
         {
-            try
+            using (var conn = new SqliteConnection(connectionString))
             {
+                conn.Open();
                 string sql = "SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement FROM tracker " +
                              "JOIN habits ON tracker.habit_id = habits.id " +
                              "WHERE tracker.habit_id = @habitId " +
@@ -123,27 +130,17 @@ namespace HabitTracker
                 }
                 return new Entry();
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return new Entry();
-            }
         }
 
         public List<Entry> GetEntries()
         {
-            try
+            using (var conn = new SqliteConnection(connectionString))
             {
+                conn.Open();
                 string sql = "SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement FROM tracker " +
                              "JOIN habits on tracker.habit_id = habits.id;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
                 return GetQueriedList(cmd, reader => new Entry(reader));
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return new List<Entry>();
             }
         }
 
@@ -165,11 +162,6 @@ namespace HabitTracker
                 }
             }
             return results;
-        }
-
-        public void Dispose()
-        {
-            if (conn != null) { conn.Close(); }
         }
     }
 }

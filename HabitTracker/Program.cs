@@ -3,6 +3,7 @@ using Microsoft.Data.Sqlite;
 
 class Program
 {
+    private static DAL dal = new DAL();
     static void Main(string[] args)
     {
         DisplayTitle();
@@ -49,72 +50,56 @@ class Program
 
     private static void ViewTable()
     {
-        using (DAL dal = new DAL())
+        List<Entry> entries = dal.GetEntries();
+        string output = string.Empty;
+        foreach (Entry entry in entries)
         {
-            List<Entry> entries = dal.GetEntries();
-            string output = string.Empty;
-            foreach (Entry entry in entries)
-            {
-                output += $"{entry}\n";
-            }
-            Console.WriteLine(output);
+            output += $"{entry}\n";
         }
+        Console.WriteLine(output);
+
     }
 
     private static void ViewHighest()
     {
-        using (DAL dal = new DAL())
-        {
-            int habitId = InputValidator.GetHabitId();
-            Entry entry = dal.GetHighestEntryForHabit(habitId);
-            Console.WriteLine($"Below is the most {entry.measurement} you have done in one go:");
-            Console.WriteLine(entry);
-        }
+        int habitId = InputValidator.GetHabitId();
+        Entry entry = dal.GetHighestEntryForHabit(habitId);
+        Console.WriteLine($"Below is the most {entry.measurement} you have done in one go:");
+        Console.WriteLine(entry);
     }
 
     private static void AddEntry()
     {
-        using (DAL dal = new DAL())
-        {
-            int habitId = InputValidator.GetHabitId();
-            string date = InputValidator.GetEntryDate();
-            int quantity = InputValidator.GetEntryQuantity(dal.GetHabit(habitId).measurement);
-            dal.AddEntry(date, quantity, habitId);
-            Console.WriteLine("Successfully added new entry.");
-        }
+        int habitId = InputValidator.GetHabitId();
+        string date = InputValidator.GetEntryDate();
+        int quantity = InputValidator.GetEntryQuantity(dal.GetHabit(habitId).measurement);
+        dal.AddEntry(date, quantity, habitId);
+        Console.WriteLine("\nSuccessfully added new entry.");
+
     }
 
     private static void DeleteEntry()
     {
         ViewTable();
         int id = InputValidator.GetIdForRemoval();
-        using (DAL dal = new DAL())
-        {
-            dal.DeleteEntry(id);
-        }
+        dal.DeleteEntry(id);
     }
 
     private static void UpdateEntry()
     {
-        using (DAL dal = new DAL())
-        {
-            ViewTable();
-            int id = InputValidator.GetIdForUpdate();
-            int habitId = InputValidator.GetHabitId();
-            int quantity = InputValidator.GetEntryQuantity(dal.GetHabit(habitId).measurement);
-            dal.UpdateEntry(id, quantity);
-        }
+        ViewTable();
+        int id = InputValidator.GetIdForUpdate();
+        int habitId = InputValidator.GetHabitId();
+        int quantity = InputValidator.GetEntryQuantity(dal.GetHabit(habitId).measurement);
+        dal.UpdateEntry(id, quantity);
     }
 
     private static void CreateHabit()
     {
         string name = InputValidator.GetHabitName();
         string measurement = InputValidator.GetHabitMeasurement();
-        using (DAL dal = new DAL())
-        {
-            dal.CreateHabit(name, measurement);
-            Console.WriteLine("Successfully added new habit.");
-        }
+        dal.CreateHabit(name, measurement);
+        Console.WriteLine("Successfully added new habit.");
     }
 
     private static void ExitApp()
@@ -137,10 +122,7 @@ class Program
 
     private static void InitializeDatabase()
     {
-        using (DAL dal = new DAL())
-        {
-            dal.CreateMainTableIfMissing();
-        }
+        dal.CreateMainTableIfMissing();
     }
 
     private static void DisplayTitle()

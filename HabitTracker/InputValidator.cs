@@ -30,36 +30,36 @@ internal static class InputValidator
     public static int GetHabitId()
     {
         string input = string.Empty;
-        using (DAL dal = new DAL())
+        DAL dal = new DAL();
+
+        try
         {
-            try
+            string listOfHabits = string.Empty;
+            List<Habit> validHabits = dal.GetHabits();
+            foreach (Habit habit in validHabits)
             {
-                string listOfHabits = string.Empty;
-                List<Habit> validHabits = dal.GetHabits();
-                foreach (Habit habit in validHabits)
-                {
-                    listOfHabits += $"{habit}\n";
-                }
-                Console.WriteLine(listOfHabits);
-                List<int> validHabitIds = validHabits.Select(h => h.id).ToList();
-                Console.Write("Enter the number corresponding to the habit this entry is for: ");
-                while (true)
-                {
-                    if (Int32.TryParse(Console.ReadLine(), out int result))
-                    {
-                        if (validHabitIds.Contains(result))
-                        {
-                            return result;
-                        }
-                    }
-                    Console.Write("This is not a valid id, please enter a number: ");
-                }
+                listOfHabits += $"{habit}\n";
             }
-            catch (Exception e)
+            Console.WriteLine(listOfHabits);
+            List<int> validHabitIds = validHabits.Select(h => h.id).ToList();
+            Console.Write("Enter the number corresponding to the habit this entry is for: ");
+            while (true)
             {
-                Console.WriteLine(e.Message);
+                if (Int32.TryParse(Console.ReadLine(), out int result))
+                {
+                    if (validHabitIds.Contains(result))
+                    {
+                        return result;
+                    }
+                }
+                Console.Write("This is not a valid id, please enter a number: ");
             }
         }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+
 
         return Int32.Parse(input);
     }
@@ -91,41 +91,40 @@ internal static class InputValidator
     public static int GetIdForRemoval()
     {
         Console.Write("Which entry do you want to remove? ");
-        using (DAL dal = new DAL())
+        DAL dal = new DAL();
+
+        List<int> validIds = dal.GetEntries().Select(o => o.id).ToList();
+        while (true)
         {
-            List<int> validIds = dal.GetEntries().Select(o => o.id).ToList();
-            while (true)
+            if (Int32.TryParse(Console.ReadLine(), out int result))
             {
-                if (Int32.TryParse(Console.ReadLine(), out int result))
+                if (validIds.Contains(result))
                 {
-                    if (validIds.Contains(result))
-                    {
-                        return result;
-                    }
+                    return result;
                 }
-                Console.Write("This is not a valid id, please enter a number: ");
             }
+            Console.Write("This is not a valid id, please enter a number: ");
         }
+
     }
 
     public static int GetIdForUpdate()
     {
         Console.Write("Which entry do you want to update? ");
-        using (DAL dal = new DAL())
+        DAL dal = new DAL();
+        List<int> validIds = dal.GetEntries().Select(o => o.id).ToList();
+        while (true)
         {
-            List<int> validIds = dal.GetEntries().Select(o => o.id).ToList();
-            while (true)
+            if (Int32.TryParse(Console.ReadLine(), out int result))
             {
-                if (Int32.TryParse(Console.ReadLine(), out int result))
+                if (validIds.Contains(result))
                 {
-                    if (validIds.Contains(result))
-                    {
-                        return result;
-                    }
+                    return result;
                 }
-                Console.Write("This is not a valid id, please enter a number: ");
             }
+            Console.Write("This is not a valid id, please enter a number: ");
         }
+
     }
 
     public static bool IsValidOption(string? input)
