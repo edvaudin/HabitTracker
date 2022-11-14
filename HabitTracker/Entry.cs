@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using MapDataReader;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,32 +9,23 @@ using System.Threading.Tasks;
 
 namespace HabitTracker
 {
+    [GenerateDataReaderMapper]
     public class Entry
     {
-        public int id = 0;
-        public string date = string.Empty;
-        public int quantity = 0;
-        public string measurement = string.Empty;
+        public int Id { get; set; }
+        public string Date { get; set; } = string.Empty;
+        public int Quantity { get; set; }
+        public string Measurement { get; set; } = string.Empty;
 
-        public Entry() { }
-
-        public Entry(SqliteDataReader reader)
+        public string GetString()
         {
-            this.id = reader.GetInt32(reader.GetOrdinal("id"));
-            this.date = reader.GetString(reader.GetOrdinal("date"));
-            this.quantity = reader.GetInt32(reader.GetOrdinal("quantity"));
-            this.measurement = reader.GetString(reader.GetOrdinal("measurement"));
-        }
-
-        public override string ToString()
-        {
-            if (DateTime.TryParse(date, out DateTime parsedDate))
+            if (DateTime.TryParse(Date, out DateTime parsedDate))
             {
-                return $"[#{id}] {quantity} {measurement} on {parsedDate.ToLongDateString()}";
+                return $"[#{Id}] {Quantity} {Measurement} on {parsedDate.ToLongDateString()}";
             }
             else
             {
-                return $"[#{id}] {quantity} {measurement} on {date}";
+                return $"[#{Id}] {Quantity} {Measurement} on {Date}";
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using MapDataReader;
+using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,22 +8,19 @@ using System.Threading.Tasks;
 
 namespace HabitTracker
 {
-    internal class DAL
+    internal class DataAccessor
     {
         static readonly string connectionString = @"Data Source=habit_tracker.db";
-        protected SqliteConnection? conn = null;
-
-        public DAL() { }
 
         public void CreateMainTableIfMissing()
         {
             using (var conn = new SqliteConnection(connectionString))
             {
                 conn.Open();
-                string sql = "CREATE TABLE IF NOT EXISTS habit (" +
-                         "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                         "date TEXT NOT NULL, " +
-                         "quantity INTEGER NOT NULL)";
+                string sql = @"CREATE TABLE IF NOT EXISTS habit (
+                             id INTEGER PRIMARY KEY AUTOINCREMENT,
+                             date TEXT NOT NULL,
+                             quantity INTEGER NOT NULL);";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
                 cmd.ExecuteNonQuery();
             }
@@ -48,7 +46,7 @@ namespace HabitTracker
                 conn.Open();
                 string sql = "SELECT * FROM habits;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
-                return GetQueriedList(cmd, reader => new Habit(reader));
+                return cmd.ExecuteReader().ToHabit();
             }
         }
 
@@ -60,14 +58,7 @@ namespace HabitTracker
                 string sql = "SELECT * FROM habits WHERE id = @id;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
                 AddParameter("@id", id, cmd);
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        return new Habit(reader);
-                    }
-                }
-                return new Habit();
+                return cmd.ExecuteReader().ToHabit().First();
             }
         }
 
@@ -97,15 +88,16 @@ namespace HabitTracker
             }
         }
 
-        public void UpdateEntry(int id, int quantity)
+        public void UpdateEntry(int id, int quantity, string date)
         {
             using (var conn = new SqliteConnection(connectionString))
             {
                 conn.Open();
-                string sql = "UPDATE tracker SET quantity = @quantity WHERE id = @id;";
+                string sql = "UPDATE tracker SET quantity = @quantity, date = @date WHERE id = @id;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
                 AddParameter("@id", id, cmd);
                 AddParameter("@quantity", quantity, cmd);
+                AddParameter("@date", date, cmd);
                 cmd.ExecuteNonQuery();
             }
         }
@@ -115,20 +107,13 @@ namespace HabitTracker
             using (var conn = new SqliteConnection(connectionString))
             {
                 conn.Open();
-                string sql = "SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement FROM tracker " +
-                             "JOIN habits ON tracker.habit_id = habits.id " +
-                             "WHERE tracker.habit_id = @habitId " +
-                             "ORDER BY quantity DESC;";
+                string sql = @"SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement FROM tracker
+                             JOIN habits ON tracker.habit_id = habits.id
+                             WHERE tracker.habit_id = @habitId
+                             ORDER BY quantity DESC;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
                 AddParameter("@habitId", habitId, cmd);
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        return new Entry(reader);
-                    }
-                }
-                return new Entry();
+                return cmd.ExecuteReader().ToEntry().First();
             }
         }
 
@@ -137,10 +122,10 @@ namespace HabitTracker
             using (var conn = new SqliteConnection(connectionString))
             {
                 conn.Open();
-                string sql = "SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement FROM tracker " +
-                             "JOIN habits on tracker.habit_id = habits.id;";
+                string sql = @"SELECT tracker.id, tracker.date, tracker.quantity, habits.measurement FROM tracker
+                             JOIN habits on tracker.habit_id = habits.id;";
                 SqliteCommand cmd = new SqliteCommand(sql, conn);
-                return GetQueriedList(cmd, reader => new Entry(reader));
+                return cmd.ExecuteReader().ToEntry();
             }
         }
 
@@ -149,19 +134,6 @@ namespace HabitTracker
             SqliteParameter param = new SqliteParameter(name, SqlDbTypeConverter.GetDbType(value.GetType()));
             param.Value = value;
             cmd.Parameters.Add(param);
-        }
-
-        protected static List<T> GetQueriedList<T>(SqliteCommand cmd, Func<SqliteDataReader, T> creator)
-        {
-            List<T> results = new List<T>();
-            using (var reader = cmd.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    results.Add(creator(reader));
-                }
-            }
-            return results;
         }
     }
 }
