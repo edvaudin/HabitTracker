@@ -2,10 +2,9 @@
 
 internal static class UserInput
 {
-
     public static string GetEntryDate()
     {
-        Console.Write("What date are you adding for? (yyyy-mm-dd): ");
+        Console.Write("\nWhat date are you adding for? (yyyy-mm-dd): ");
         string input = Console.ReadLine();
         while (!Validator.IsValidDateInput(input))
         {
@@ -17,7 +16,7 @@ internal static class UserInput
 
     public static int GetEntryQuantity(string measurement)
     {
-        Console.Write($"How many {measurement} did you do? ");
+        Console.Write($"\nHow many {measurement} did you do? ");
         string input = Console.ReadLine();
         while (!Validator.IsPositiveIntInput(input))
         {
@@ -30,43 +29,33 @@ internal static class UserInput
     public static int GetHabitId()
     {
         string input = string.Empty;
-        DataAccessor dal = new DataAccessor();
 
-        try
+        string listOfHabits = "\n";
+        List<Habit> validHabits = DataAccessor.GetHabits();
+        foreach (Habit habit in validHabits)
         {
-            string listOfHabits = string.Empty;
-            List<Habit> validHabits = dal.GetHabits();
-            foreach (Habit habit in validHabits)
+            listOfHabits += $"{habit.GetString()}\n";
+        }
+        Console.WriteLine(listOfHabits);
+        List<int> validHabitIds = validHabits.Select(h => h.Id).ToList();
+        Console.Write("\nEnter the number corresponding to the habit this entry is for: ");
+        while (true)
+        {
+            int result;
+            if (Validator.IsIntInputWithResult(out result))
             {
-                listOfHabits += $"{habit.GetString()}\n";
-            }
-            Console.WriteLine(listOfHabits);
-            List<int> validHabitIds = validHabits.Select(h => h.Id).ToList();
-            Console.Write("Enter the number corresponding to the habit this entry is for: ");
-            while (true)
-            {
-                int result;
-                if (Validator.IsIntInputWithResult(out result))
+                if (validHabitIds.Contains(result))
                 {
-                    if (validHabitIds.Contains(result))
-                    {
-                        return result;
-                    }
+                    return result;
                 }
-                Console.Write("This is not a valid id, please enter a number: ");
             }
+            Console.Write("This is not a valid id, please enter a number: ");
         }
-        catch (Exception e)
-        {
-            Console.WriteLine(e.Message);
-        }
-
-        return Int32.Parse(input);
     }
 
     public static string GetHabitMeasurement()
     {
-        Console.Write("What is the measurement of your habit? ");
+        Console.Write("\nWhat is the measurement of your habit? ");
         string input = Console.ReadLine();
         while (Validator.IsNonEmptyNonFullString(input))
         {
@@ -78,7 +67,7 @@ internal static class UserInput
 
     public static string GetHabitName()
     {
-        Console.Write("What is the name of your habit? ");
+        Console.Write("\nWhat is the name of your habit? ");
         string input = Console.ReadLine();
         while (Validator.IsNonEmptyNonFullString(input))
         {
@@ -90,10 +79,10 @@ internal static class UserInput
 
     public static int GetIdForRemoval()
     {
-        Console.Write("Which entry do you want to remove? ");
+        Console.Write("\nWhich entry do you want to remove? ");
         DataAccessor dal = new DataAccessor();
 
-        List<int> validIds = dal.GetEntries().Select(o => o.Id).ToList();
+        List<int> validIds = DataAccessor.GetEntries().Select(o => o.Id).ToList();
         while (true)
         {
             if (Int32.TryParse(Console.ReadLine(), out int result))
@@ -110,9 +99,9 @@ internal static class UserInput
 
     public static int GetIdForUpdate()
     {
-        Console.Write("Which entry do you want to update? ");
+        Console.Write("\nWhich entry do you want to update? ");
         DataAccessor dal = new DataAccessor();
-        List<int> validIds = dal.GetEntries().Select(o => o.Id).ToList();
+        List<int> validIds = DataAccessor.GetEntries().Select(o => o.Id).ToList();
         while (true)
         {
             if (Int32.TryParse(Console.ReadLine(), out int result))

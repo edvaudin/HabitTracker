@@ -1,9 +1,7 @@
 ﻿using HabitTracker;
-using Microsoft.Data.Sqlite;
 
 class Program
 {
-    private static DataAccessor dal = new DataAccessor();
     private static bool userFinished = false;
     static void Main(string[] args)
     {
@@ -53,17 +51,16 @@ class Program
     private static void ViewHighest()
     {
         int habitId = UserInput.GetHabitId();
-        Entry entry = dal.GetHighestEntryForHabit(habitId);
-        Console.WriteLine($"Below is the most {entry.Measurement} you have done in one go:");
-        Console.WriteLine(entry);
+        Entry entry = DataAccessor.GetHighestEntryForHabit(habitId);
+        Viewer.DisplayHighestEntry(entry);
     }
 
     private static void AddEntry()
     {
         int habitId = UserInput.GetHabitId();
         string date = UserInput.GetEntryDate();
-        int quantity = UserInput.GetEntryQuantity(dal.GetHabit(habitId).Measurement);
-        dal.AddEntry(date, quantity, habitId);
+        int quantity = UserInput.GetEntryQuantity(DataAccessor.GetHabit(habitId).Measurement);
+        DataAccessor.AddEntry(date, quantity, habitId);
         Console.WriteLine("\nSuccessfully added new entry.");
     }
 
@@ -71,7 +68,8 @@ class Program
     {
         Viewer.DisplayEntryTable();
         int id = UserInput.GetIdForRemoval();
-        dal.DeleteEntry(id);
+        DataAccessor.DeleteEntry(id);
+        Console.WriteLine("\nSuccessfully deleted entry.");
     }
 
     private static void UpdateEntry()
@@ -79,17 +77,18 @@ class Program
         Viewer.DisplayEntryTable();
         int id = UserInput.GetIdForUpdate();
         int habitId = UserInput.GetHabitId();
-        int quantity = UserInput.GetEntryQuantity(dal.GetHabit(habitId).Measurement);
+        int quantity = UserInput.GetEntryQuantity(DataAccessor.GetHabit(habitId).Measurement);
         string date = UserInput.GetEntryDate();
-        dal.UpdateEntry(id, quantity, date);
+        DataAccessor.UpdateEntry(id, quantity, date);
+        Console.WriteLine("\nSuccessfully updated entry.");
     }
 
     private static void CreateHabit()
     {
         string name = UserInput.GetHabitName();
         string measurement = UserInput.GetHabitMeasurement();
-        dal.CreateHabit(name, measurement);
-        Console.WriteLine("Successfully added new habit.");
+        DataAccessor.CreateHabit(name, measurement);
+        Console.WriteLine("\nSuccessfully added new habit.");
     }
 
     private static void ExitApp()
@@ -99,6 +98,6 @@ class Program
 
     private static void InitializeDatabase()
     {
-        dal.CreateMainTableIfMissing();
+        DataAccessor.CreateMainTableIfMissing();
     }
 }
